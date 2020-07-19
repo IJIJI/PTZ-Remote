@@ -49,7 +49,7 @@ struct Data_Package {
   byte joyZ = 127;
   modes mode = normal;
   tallyState tally = none;
-  byte speed;
+  byte speed = 1;
   byte button = 0; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
 
   
@@ -57,41 +57,116 @@ struct Data_Package {
 
 Data_Package data;
 
+
+unsigned long lastSend;
+
+
 void setup(){
   Serial.begin(115200);
+
+  //TODO: add joystick detection. If all joystick inputs (or only the z axis) are 0 at bootup there's probably no joystick.
 
   radio.begin();
   radio.openWritingPipe(RFaddress);
   radio.setPALevel(RF24_PA_MAX);
   radio.stopListening();
+
+  lastSend = millis();
 }
 
 void loop(){
-  char key = keypad.getKey();
+  readInputs();
 
-  if (key != NO_KEY){
-    Serial.println(key);
-    radio.write(&key, sizeof(key));
+  if (millis() > lastSend + 100){
+    lastSend = millis();
+    sendJoy();
   }
+  
+  if (data.button == 11){
+    if (data.mode == normal){
+      data.mode = modeWrite;
+    }
+    else {
+      data.mode = normal;
+    }
+  }
+  else if (data.button != 0 && data.button != 11 && data.button != 12 &&  data.mode == normal){
+
+    const byte send[] = {callPos, data.button, data.speed};
+
+    Serial.print("S: Command: ");
+    Serial.print(commandNames[send[0]]);
+    Serial.print(" Data: ");
+    Serial.print(send[1]);
+    Serial.print(" ");
+    Serial.println(send[2]);
+    
+
+    radio.write(&send, sizeof(send));
+  }
+
+  else if (data.button != 0 && data.button != 11 && data.button != 12 && data.mode == modeWrite){
+
+    const byte send[] = {writePos, data.button};
+
+    Serial.print("S: Command: ");
+    Serial.print(commandNames[send[0]]);
+    Serial.print(" Data: ");
+    Serial.println(send[1]);
+
+    radio.write(&send, sizeof(send));
+  }
+
+
 }
 
 void sendJoy() {
   const byte send[] = {joyUpdate, data.joyX, data.joyY, 127, data.speed};
+
+  Serial.print("S: Command: ");
+  Serial.print(commandNames[send[0]]);
+  Serial.print(" Data: ");
+  Serial.print(send[1]);
+  Serial.print(" ");
+  Serial.print(send[2]);
+  Serial.print(" ");
+  Serial.print(send[3]);
+  Serial.print(" ");
+  Serial.println(send[4]);
+  
   radio.write(&send, sizeof(send));
 }
 
 
 void readInputs() {
   #ifdef joyXPin
-    data.joyX = map(analogRead(joyXPin), 0, 1023, 0 , 255);
+    if (analogRead(joyXPin) < 485 || analogRead(joyXPin) > 539){
+      data.joyX = map(analogRead(joyXPin), 0, 1023, 0 , 255);
+    }
+    else{
+      data.joyX = 127;
+    }
+    
   #endif
 
   #ifdef joyYPin
-    data.joyY = map(analogRead(joyYPin), 0, 1023, 0 , 255);
+    if (analogRead(joyYPin) < 485 || analogRead(joyYPin) > 539){
+      data.joyY = map(analogRead(joyYPin), 0, 1023, 0 , 255);
+    }
+    else{
+      data.joyY = 127;
+    }
+
   #endif
 
   #ifdef joyZPin
-    data.joyZ = map(analogRead(joyZPin), 0, 1023, 0 , 255);
+    if (analogRead(joyZPin) < 485 || analogRead(joyZPin) > 539){
+      data.joyZ = map(analogRead(joyZPin), 0, 1023, 0 , 255);
+    }
+    else{
+      data.joyZ = 127;
+    }
+
   #endif
 
 
