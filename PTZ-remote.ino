@@ -21,9 +21,9 @@ byte colPins[COLS] = {A0, A1, A2}; //connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
-#define joyXPin 6 //!Analog Pin
-#define joyYPin 7 //!Analog Pin
-// #define joyZPin 2 //!Analog Pin
+#define joyXPin 7 //!Analog Pin
+#define joyYPin 6 //!Analog Pin
+// #define joyZPin 3 //!Analog Pin
 
 
 
