@@ -17,12 +17,12 @@ char keys[ROWS][COLS] = {
 };
 
 byte rowPins[ROWS] = {8, 7, 6, 5}; //connect to the row pinouts of the keypad
-byte colPins[COLS] = {4, 3, 2}; //connect to the column pinouts of the keypad
+byte colPins[COLS] = {A0, A1, A2}; //connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
-#define joyXPin 0 //!Analog Pin
-#define joyYPin 1 //!Analog Pin
+#define joyXPin 6 //!Analog Pin
+#define joyYPin 7 //!Analog Pin
 // #define joyZPin 2 //!Analog Pin
 
 
