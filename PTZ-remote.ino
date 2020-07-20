@@ -37,25 +37,32 @@ enum tallyState {
   none
 };
 
-enum modes {
-  normal,
-  modeWrite
+enum buttonState {
+  Pressed,
+  Hold,
+  Released,
+  Idle
 };
 
+// enum modes {
+//   normal,
+//   modeWrite
+// };
 
-struct Data_Package {
+
+struct dataPackage {
   byte joyX = 127;
   byte joyY = 127;
   byte joyZ = 127;
-  modes mode = normal;
+  // modes mode = normal;
   tallyState tally = none;
   byte speed = 1;
-  byte button = 0; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
+  buttonState button[12] {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
 
   
 };
 
-Data_Package data;
+dataPackage data;
 
 
 unsigned long lastSend;
@@ -81,42 +88,65 @@ void loop(){
     lastSend = millis();
     sendJoy();
   }
+
+
+  if (false){
+    lastSend = millis();
+
+    Serial.print("Buttons: ");
+    for (int x = 0; x < 12; x++){
+      Serial.print(data.button[x]);
+      Serial.print(" ");
+    }
+    Serial.println();
+  }
+
   
-  if (data.button == 11){
-    if (data.mode == normal){
-      data.mode = modeWrite;
+  if (data.button[10] == Pressed || data.button[10] == Hold){ //TODO Make it only on hold, will need to add some kind of indicator.
+
+    for (int x = 0; x < 10; x++){
+      if (data.button[x] == Pressed){
+
+        const byte send[] = {writePos, 1 + x};
+
+
+        Serial.print("S: Command: ");
+        Serial.print(commandNames[send[0]]);
+        Serial.print(" Data: ");
+        Serial.println(send[1]);
+        
+
+        radio.write(&send, sizeof(send));
+
+        break;
+      }
     }
-    else {
-      data.mode = normal;
+
+  }
+  else {
+
+    for (int x = 0; x < 10; x++){
+      if (data.button[x] == Pressed){
+
+        const byte send[] = {callPos, 1 + x, data.speed};
+
+
+        Serial.print("S: Command: ");
+        Serial.print(commandNames[send[0]]);
+        Serial.print(" Data: ");
+        Serial.print(send[1]);
+        Serial.print(" ");
+        Serial.println(send[2]);
+        
+
+        radio.write(&send, sizeof(send));
+
+        break;
+      }
     }
+
+
   }
-  else if (data.button != 0 && data.button != 11 && data.button != 12 &&  data.mode == normal){
-
-    const byte send[] = {callPos, data.button, data.speed};
-
-    Serial.print("S: Command: ");
-    Serial.print(commandNames[send[0]]);
-    Serial.print(" Data: ");
-    Serial.print(send[1]);
-    Serial.print(" ");
-    Serial.println(send[2]);
-    
-
-    radio.write(&send, sizeof(send));
-  }
-
-  else if (data.button != 0 && data.button != 11 && data.button != 12 && data.mode == modeWrite){
-
-    const byte send[] = {writePos, data.button};
-
-    Serial.print("S: Command: ");
-    Serial.print(commandNames[send[0]]);
-    Serial.print(" Data: ");
-    Serial.println(send[1]);
-
-    radio.write(&send, sizeof(send));
-  }
-
 
 }
 
@@ -170,51 +200,87 @@ void readInputs() {
   #endif
 
 
-  char key = keypad.getKey();
 
-  if (key != NO_KEY){
-    if (key == '1'){
-      data.button = 1;
+
+  if (keypad.getKeys())
+  {
+
+    for (int i=0; i<LIST_MAX; i++)   // Scan the whole key list.
+    {
+      if ( keypad.key[i].stateChanged )   // Only find keys that have changed state.
+      {
+        int button;
+        switch (keypad.key[i].kchar){
+
+          case '1': 
+          button = 0;
+          break;
+
+          case '2': 
+          button = 1;
+          break;
+
+          case '3': 
+          button = 2;
+          break;
+
+          case '4': 
+          button = 3;
+          break;
+
+          case '5': 
+          button = 4;
+          break;
+
+          case '6': 
+          button = 5;
+          break;
+
+          case '7': 
+          button = 6;
+          break;
+
+          case '8': 
+          button = 7;
+          break;
+
+          case '9': 
+          button = 8;
+          break;
+
+          case '0': 
+          button = 9;
+          break;
+
+          case '*': 
+          button = 10;
+          break;
+
+          case '#': 
+          button = 11;
+          break;
+        }
+
+        switch (keypad.key[i].kstate) {  // Report active key state : IDLE, PRESSED, HOLD, or RELEASED
+          case PRESSED:
+          data.button[button] = Pressed;
+          break;
+
+          case HOLD:
+          data.button[button] = Hold;
+          break;
+
+          case RELEASED:
+          data.button[button] = Released;
+          break;
+
+          case IDLE:
+          data.button[button] = Idle;
+        }
+
+      }
     }
-    else if (key == '2'){
-      data.button = 2;
-    }
-    else if (key == '3'){
-      data.button = 3;
-    }
-    else if (key == '4'){
-      data.button = 4;
-    }
-    else if (key == '5'){
-      data.button = 5;
-    }
-    else if (key == '6'){
-      data.button = 6;
-    }
-    else if (key == '7'){
-      data.button = 7;
-    }
-    else if (key == '8'){
-      data.button = 8;
-    }
-    else if (key == '9'){
-      data.button = 9;
-    }
-    else if (key == '0'){
-      data.button = 10;
-    }
-    else if (key == '*'){
-      data.button = 11;
-    }
-    else if (key == '#'){
-      data.button = 12;
-    }
-    
-  }
-  else {
-    data.button = 0;
   }
 
 
 }
-
