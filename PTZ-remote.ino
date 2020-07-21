@@ -74,7 +74,7 @@ void setup(){
 
   //TODO: add joystick detection. If all joystick inputs (or only the z axis) are 0 at bootup there's probably no joystick.
 
-  keypad.setHoldTime(4000);
+  keypad.setHoldTime(2000);
 
   radio.begin();
   radio.openWritingPipe(RFaddress);
