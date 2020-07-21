@@ -57,7 +57,8 @@ struct dataPackage {
   // modes mode = normal;
   tallyState tally = none;
   byte speed = 1;
-  buttonState button[12] {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
+  buttonState button[12] = {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
+  buttonState lastButton[12] = {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
 
   
 };
@@ -72,6 +73,8 @@ void setup(){
   Serial.begin(115200);
 
   //TODO: add joystick detection. If all joystick inputs (or only the z axis) are 0 at bootup there's probably no joystick.
+
+  keypad.setHoldTime(1000);
 
   radio.begin();
   radio.openWritingPipe(RFaddress);
@@ -101,11 +104,23 @@ void loop(){
     Serial.println();
   }
 
+  if (data.button[11] == Hold && data.lastButton[11] != Hold){
+
+
+    const byte send[] = {homeNow};
+
+    Serial.print("S: Command: ");
+    Serial.println(commandNames[send[0]]);
+    
+
+    radio.write(&send, sizeof(send));
+  }
+
   
   if (data.button[10] == Pressed || data.button[10] == Hold){ //TODO Make it only on hold, will need to add some kind of indicator.
 
     for (int x = 0; x < 10; x++){
-      if (data.button[x] == Pressed){
+      if (data.button[x] == Pressed && data.lastButton[x] != Pressed){
 
         const byte send[] = {writePos, 1 + x};
 
@@ -126,7 +141,7 @@ void loop(){
   else {
 
     for (int x = 0; x < 10; x++){
-      if (data.button[x] == Pressed){
+      if (data.button[x] == Pressed && data.lastButton[x] != Pressed){
 
         const byte send[] = {callPos, 1 + x, data.speed};
 
@@ -148,6 +163,10 @@ void loop(){
 
   }
 
+
+
+  saveInputs();
+  
 }
 
 void sendJoy() {
@@ -283,4 +302,11 @@ void readInputs() {
   }
 
 
+}
+
+
+void saveInputs() {
+  for (int z = 0; z < 12; z++ ){
+    data.lastButton[z] = data.button[z];
+  }
 }
