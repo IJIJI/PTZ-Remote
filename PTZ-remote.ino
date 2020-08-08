@@ -23,7 +23,7 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 #define joyXPin 7 //!Analog Pin
 #define joyYPin 6 //!Analog Pin
-#define joyZPin 5 //!Analog Pin
+// #define joyZPin 5 //!Analog Pin
 
 
 
@@ -54,6 +54,10 @@ struct dataPackage {
   byte joyX = 127;
   byte joyY = 127;
   byte joyZ = 127;
+  byte lastJoyX = 127;
+  byte lastJoyY = 127;
+  byte lastJoyZ = 127;
+
   // modes mode = normal;
   tallyState tally = none;
   byte speed = 1;
@@ -87,9 +91,20 @@ void setup(){
 void loop(){
   readInputs();
 
-  if (millis() > lastSend + 100){
+
+// millis() > lastSend + 100 ||
+  if (data.joyX != 127 || data.joyX != data.lastJoyX
+  
+  || data.joyY != 127 || data.joyY != data.lastJoyY
+  #ifdef joyZPin
+  || data.joyZ != 127 || data.joyZ != data.lastJoyZ
+  #endif
+  ){
     lastSend = millis();
     sendJoy();
+    data.lastJoyX = data.joyX;
+    data.lastJoyY = data.joyY;
+    data.lastJoyZ = data.joyZ;
   }
 
 
