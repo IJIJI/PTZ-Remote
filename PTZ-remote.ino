@@ -23,7 +23,7 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 #define joyXPin 7 //!Analog Pin
 #define joyYPin 6 //!Analog Pin
-// #define joyZPin 3 //!Analog Pin
+#define joyZPin 5 //!Analog Pin
 
 
 
@@ -78,7 +78,7 @@ void setup(){
 
   radio.begin();
   radio.openWritingPipe(RFaddress);
-  radio.setPALevel(RF24_PA_MAX);
+  radio.setPALevel(RF24_PA_HIGH);
   radio.stopListening();
 
   lastSend = millis();
@@ -189,8 +189,8 @@ void sendJoy() {
 
 void readInputs() {
   #ifdef joyXPin
-    if (analogRead(joyXPin) < 485 || analogRead(joyXPin) > 539){
-      data.joyX = map(analogRead(joyXPin), 0, 1023, 0 , 255);
+    if (analogRead(joyXPin) < 480 || analogRead(joyXPin) > 544){
+      data.joyX = map(analogRead(joyXPin), 0, 1023, 255 , 0);
     }
     else{
       data.joyX = 127;
@@ -199,8 +199,8 @@ void readInputs() {
   #endif
 
   #ifdef joyYPin
-    if (analogRead(joyYPin) < 485 || analogRead(joyYPin) > 539){
-      data.joyY = map(analogRead(joyYPin), 0, 1023, 0 , 255);
+    if (analogRead(joyYPin) < 480 || analogRead(joyYPin) > 544){
+      data.joyY = map(analogRead(joyYPin), 0, 1023, 255 , 0);
     }
     else{
       data.joyY = 127;
@@ -209,7 +209,7 @@ void readInputs() {
   #endif
 
   #ifdef joyZPin
-    if (analogRead(joyZPin) < 485 || analogRead(joyZPin) > 539){
+    if (analogRead(joyZPin) < 480 || analogRead(joyZPin) > 544){
       data.joyZ = map(analogRead(joyZPin), 0, 1023, 0 , 255);
     }
     else{
