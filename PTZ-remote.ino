@@ -7,6 +7,9 @@
 #include "commands.h"
 
 
+
+
+
 const byte ROWS = 4; //four rows
 const byte COLS = 3; //three columns
 char keys[ROWS][COLS] = {
@@ -44,10 +47,7 @@ enum buttonState {
   Idle
 };
 
-// enum modes {
-//   normal,
-//   modeWrite
-// };
+#define deadZone 150
 
 
 struct dataPackage {
@@ -204,18 +204,26 @@ void sendJoy() {
 
 void readInputs() {
   #ifdef joyXPin
-    if (analogRead(joyXPin) < 480 || analogRead(joyXPin) > 544){
-      data.joyX = map(analogRead(joyXPin), 0, 1023, 255 , 0);
+    if (analogRead(joyXPin) < 511 - deadZone){
+      data.joyX = map(analogRead(joyXPin), 0, 511 - deadZone, 255 , 127);
+      // data.joyX = map(analogRead(joyXPin), 0, 1023, 255 , 0);
+    }
+    else if (analogRead(joyXPin) > 512 + deadZone){
+      data.joyX = map(analogRead(joyXPin), 512 + deadZone, 1023, 127 , 0);
     }
     else{
       data.joyX = 127;
     }
-    
+
   #endif
 
   #ifdef joyYPin
-    if (analogRead(joyYPin) < 480 || analogRead(joyYPin) > 544){
-      data.joyY = map(analogRead(joyYPin), 0, 1023, 255 , 0);
+    if (analogRead(joyYPin) < 511 - deadZone){
+      data.joyY = map(analogRead(joyYPin), 0, 511 - deadZone, 0 , 127);
+      // data.joyY = map(analogRead(joyYPin), 0, 1023, 255 , 0);
+    }
+    else if (analogRead(joyYPin) > 512 + deadZone){
+      data.joyY = map(analogRead(joyYPin), 512 + deadZone, 1023, 127 , 255);
     }
     else{
       data.joyY = 127;
@@ -224,7 +232,7 @@ void readInputs() {
   #endif
 
   #ifdef joyZPin
-    if (analogRead(joyZPin) < 480 || analogRead(joyZPin) > 544){
+    if (analogRead(joyZPin) < 470 || analogRead(joyZPin) > 554){
       data.joyZ = map(analogRead(joyZPin), 0, 1023, 0 , 255);
     }
     else{
