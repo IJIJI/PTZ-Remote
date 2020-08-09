@@ -219,11 +219,11 @@ void readInputs() {
 
   #ifdef joyYPin
     if (analogRead(joyYPin) < 511 - deadZone){
-      data.joyY = map(analogRead(joyYPin), 0, 511 - deadZone, 0 , 127);
+      data.joyY = map(analogRead(joyYPin), 0, 511 - deadZone, 255 , 127);
       // data.joyY = map(analogRead(joyYPin), 0, 1023, 255 , 0);
     }
     else if (analogRead(joyYPin) > 512 + deadZone){
-      data.joyY = map(analogRead(joyYPin), 512 + deadZone, 1023, 127 , 255);
+      data.joyY = map(analogRead(joyYPin), 512 + deadZone, 1023, 127 , 0);
     }
     else{
       data.joyY = 127;
