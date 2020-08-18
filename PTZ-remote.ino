@@ -26,7 +26,7 @@ Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 #define joyXPin 7 //!Analog Pin
 #define joyYPin 6 //!Analog Pin
-// #define joyZPin 5 //!Analog Pin
+#define joyZPin 5 //!Analog Pin
 
 
 
@@ -185,7 +185,7 @@ void loop(){
 }
 
 void sendJoy() {
-  const byte send[] = {joyUpdate, data.joyX, data.joyY, 127, data.speed};
+  const byte send[] = {joyUpdate, data.joyX, data.joyY, data.joyZ, data.speed};
 
   Serial.print("S: Command: ");
   Serial.print(commandNames[send[0]]);
@@ -232,8 +232,13 @@ void readInputs() {
   #endif
 
   #ifdef joyZPin
-    if (analogRead(joyZPin) < 470 || analogRead(joyZPin) > 554){
-      data.joyZ = map(analogRead(joyZPin), 0, 1023, 0 , 255);
+    if (analogRead(joyZPin) < 465 - deadZone){
+      data.joyZ = map(analogRead(joyZPin), 0, 511 - deadZone, 255 , 127);
+      // data.joyZ = map(analogRead(joyZPin), 0, 1023, 255 , 0);
+    }
+    else if (analogRead(joyZPin) > 465 + deadZone){
+      data.joyZ = map(analogRead(joyZPin), 512 + deadZone, 1024, 127 , 0);
+      // data.joyZ = analogRead(joyZPin);
     }
     else{
       data.joyZ = 127;
