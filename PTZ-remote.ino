@@ -4,6 +4,8 @@
 #include <SPI.h>
 #include <RF24.h>
 
+
+
 #include "commands.h"
 
 
@@ -34,11 +36,7 @@ RF24 radio(10, 9); // CE, CSN
 
 const byte RFaddress[6] = "69489";
 
-enum tallyState {
-  program,
-  preview,
-  none
-};
+
 
 enum buttonState {
   Pressed,
@@ -59,7 +57,6 @@ struct dataPackage {
   byte lastJoyZ = 127;
 
   // modes mode = normal;
-  tallyState tally = none;
   byte speed = 1;
   buttonState button[12] = {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
   buttonState lastButton[12] = {Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle, Idle}; // Button formatting = none:0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:8, 9:9, 0:10, *:11, #:12
